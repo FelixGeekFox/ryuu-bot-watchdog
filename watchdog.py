@@ -140,12 +140,18 @@ def start_bot():
     except FileNotFoundError:
         pass
 
-    # Clear old logs
+    # Clear old logs if possible; if another process has them open, truncate them in-place.
     for log_file in [OUT_LOG, ERR_LOG]:
         try:
             os.remove(log_file)
         except FileNotFoundError:
             pass
+        except PermissionError:
+            try:
+                with open(log_file, "w") as f:
+                    f.truncate(0)
+            except Exception:
+                pass
 
     env = os.environ.copy()
     env["PYTHONUTF8"] = "1"
